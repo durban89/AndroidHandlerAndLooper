@@ -13,7 +13,9 @@ public class MainActivity extends AppCompatActivity {
 
     private Button button;
     private TextView textView;
-    private MyHandler handler;
+//    private MyHandler handler;
+
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,15 +25,21 @@ public class MainActivity extends AppCompatActivity {
         button = (Button) this.findViewById(R.id.button);
         textView = (TextView) this.findViewById(R.id.textView);
 
-        Looper looper = Looper.myLooper();
+//        Looper looper = Looper.myLooper();
+//        handler = new MyHandler(looper);
 
-        handler = new MyHandler(looper);
+        new Thread(new OtherThread()).start();
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new Thread(new MyThread()).start();
+//                new Thread(new MyThread()).start();
+
+                Message message = Message.obtain();
+                message.obj = "li";
+                handler.sendMessage(message);
             }
+
         });
     }
 
@@ -57,6 +65,22 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             textView.setText("接收消息 ==> "+msg.obj);
+        }
+    }
+
+    public class OtherThread implements Runnable{
+        @Override
+        public void run() {
+            Looper.prepare();
+            handler = new Handler(){
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+//                    textView.setText("从UI主线程中获取消息 ==>" + msg.obj);
+                    System.out.println("从UI主线程中获取消息 ==>" + msg.obj);
+                }
+            };
+            Looper.loop();
         }
     }
 }
